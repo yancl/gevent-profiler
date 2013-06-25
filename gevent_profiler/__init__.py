@@ -384,6 +384,14 @@ def attach_on_signal(signum=signal.SIGUSR1, duration=60):
 	new_handler = lambda signum, frame: attach(duration=duration)
 	signal.signal(signum, new_handler)
 
+def output_on_signal(trace_began_at):
+    def _(signum, stack):
+        print 'outputing stats begin>>>'
+        sys.settrace(None)
+        _print_output(time.time() - trace_began_at)
+        print 'outputing stats finish<<<'
+    return _
+
 if __name__ == "__main__":
 	from optparse import OptionParser
 	parser = OptionParser()
@@ -419,6 +427,9 @@ if __name__ == "__main__":
 	file = args[0]
 
 	trace_began_at = time.time()
+
+        signal.signal(signal.SIGUSR2, output_on_signal(trace_began_at))
+
 	sys.settrace(_globaltrace)
 	execfile(file)
 	sys.settrace(None)
